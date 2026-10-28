@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <!-- PWA (ホーム画面アプリ化) 用の設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -10,86 +10,86 @@
     <title>Music Player</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #ffffff;
-            --text-secondary: #b3b3b3;
-            --accent-color: #1db954;
-            --accent-hover: #1ed760;
-            --border-color: #2a2a2a;
+            --bg-color: #0b0b0e;
+            --card-bg: #16161a;
+            --card-sub-bg: #202026;
+            --text-main: #ffffff;
+            --text-sub: #9494a0;
+            --accent: #1db954;
+            --accent-glow: rgba(29, 185, 84, 0.25);
+            --border-color: #272730;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            color: var(--text-main);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px) 16px;
             user-select: none;
             -webkit-user-select: none;
         }
 
-        .container {
+        .app-container {
             width: 100%;
-            max-width: 450px;
+            max-width: 420px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            padding-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 1.4rem;
-            text-align: center;
-            margin-bottom: 5px;
+            gap: 16px;
+            padding-bottom: 24px;
         }
 
         /* プレイヤーカード */
         .player-card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 24px;
+            background: linear-gradient(145deg, #1a1a20 0%, #121216 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px 20px 20px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
         }
 
         .album-art {
-            width: 160px;
-            height: 160px;
-            background: linear-gradient(135deg, #282828, #3e3e3e);
-            border-radius: 12px;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #2a2a35, #181820);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .album-art span {
-            font-size: 3rem;
+        .album-art svg {
+            width: 56px;
+            height: 56px;
+            fill: var(--text-sub);
         }
 
         .track-info {
             text-align: center;
             width: 100%;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .track-title {
-            font-size: 1.1rem;
-            font-weight: bold;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -97,24 +97,25 @@
         }
 
         .track-category {
-            font-size: 0.8rem;
-            color: var(--accent-color);
-            background: rgba(29, 185, 84, 0.15);
-            padding: 4px 10px;
-            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 3px 12px;
+            border-radius: 12px;
             display: inline-block;
         }
 
         /* プログレスバー */
-        .progress-container {
+        .progress-area {
             width: 100%;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .progress-bar {
             width: 100%;
-            height: 6px;
-            background: #404040;
+            height: 5px;
+            background: #2a2a35;
             border-radius: 3px;
             appearance: none;
             outline: none;
@@ -126,128 +127,209 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: var(--text-color);
+            background: var(--text-main);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
 
-        .time-info {
+        .time-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
+            font-size: 0.72rem;
+            color: var(--text-sub);
             margin-top: 6px;
+            font-variant-numeric: tabular-nums;
         }
 
-        /* コントロールボタン */
+        /* メインコントロールボタン */
         .controls {
             display: flex;
             align-items: center;
             justify-content: space-between;
             width: 100%;
+            padding: 0 8px;
         }
 
-        button {
+        .btn-icon {
             background: none;
             border: none;
-            color: var(--text-color);
-            font-size: 1.2rem;
+            color: var(--text-sub);
             cursor: pointer;
             padding: 10px;
-            transition: transform 0.1s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, transform 0.1s;
         }
 
-        button:active {
+        .btn-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        .btn-icon:active {
             transform: scale(0.9);
         }
 
-        button.active-mode {
-            color: var(--accent-color);
+        .btn-icon.active {
+            color: var(--accent);
         }
 
         .play-pause-btn {
-            background-color: var(--text-color);
+            background-color: var(--text-main);
             color: var(--bg-color);
-            width: 56px;
-            height: 56px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
-            box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.25);
+            transition: transform 0.1s, background-color 0.2s;
         }
 
-        /* セクション */
-        .section {
+        .play-pause-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--bg-color);
+        }
+
+        .play-pause-btn:active {
+            transform: scale(0.93);
+        }
+
+        /* セクション共通 */
+        .card-section {
             background-color: var(--card-bg);
-            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
             padding: 16px;
         }
 
-        .section h2 {
-            font-size: 0.95rem;
-            margin-bottom: 12px;
-            color: var(--text-secondary);
-        }
-
-        .form-group {
+        .section-header {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
         }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            background-color: #2a2a2a;
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* アコーディオン形式のインポート領域（すっきり化） */
+        .add-music-toggle {
+            background: var(--card-sub-bg);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-color);
-            font-size: 0.9rem;
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 12px 16px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .add-music-toggle svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--text-sub);
+            transition: transform 0.3s;
+        }
+
+        .add-music-toggle.open svg {
+            transform: rotate(180deg);
+        }
+
+        .add-music-panel {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .add-music-panel.show {
+            display: flex;
+        }
+
+        .category-input {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: var(--card-sub-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.85rem;
             outline: none;
         }
 
-        /* iPhoneで確実に応答させるインポートボタン */
         .file-select-btn {
+            background: linear-gradient(135deg, var(--accent), #179643);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #2a2a2a;
-            border: 2px dashed var(--accent-color);
-            padding: 14px;
-            border-radius: 8px;
-            color: var(--text-color);
-            font-weight: bold;
-            font-size: 0.9rem;
-            cursor: pointer;
-            text-align: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
 
+        .file-select-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        /* カテゴリタブ */
         .filter-tabs {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             overflow-x: auto;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        .filter-tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .filter-tab {
-            background-color: #2a2a2a;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
+            background-color: var(--card-sub-bg);
+            border: 1px solid var(--border-color);
+            padding: 5px 14px;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-sub);
             white-space: nowrap;
+            cursor: pointer;
         }
 
         .filter-tab.active {
-            background-color: var(--text-color);
+            background-color: var(--text-main);
             color: var(--bg-color);
-            font-weight: bold;
+            border-color: var(--text-main);
+            font-weight: 700;
         }
 
+        /* プレイリスト */
         .playlist {
-            max-height: 220px;
+            max-height: 200px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -259,48 +341,69 @@
             align-items: center;
             justify-content: space-between;
             padding: 10px 12px;
-            background-color: #242424;
-            border-radius: 8px;
+            background-color: var(--card-sub-bg);
+            border-radius: 10px;
+            border: 1px solid transparent;
+            transition: background-color 0.2s;
         }
 
         .playlist-item.playing {
-            border-left: 4px solid var(--accent-color);
-            background-color: #222d25;
+            border-color: rgba(29, 185, 84, 0.4);
+            background-color: rgba(29, 185, 84, 0.08);
         }
 
         .playlist-item-info {
             overflow: hidden;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .playlist-item-title {
             font-size: 0.85rem;
+            font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .playlist-item.playing .playlist-item-title {
+            color: var(--accent);
+            font-weight: 700;
         }
 
         .playlist-item-cat {
             font-size: 0.7rem;
-            color: var(--text-secondary);
+            color: var(--text-sub);
         }
 
         .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            padding: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .delete-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .delete-btn:hover {
             color: #ff5555;
-            font-size: 0.85rem;
-            padding: 4px 8px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Music Player</h1>
-
-        <!-- プレイヤー本体 -->
+    <div class="app-container">
+        <!-- メインプレイヤー -->
         <div class="player-card">
             <div class="album-art">
-                <span>🎵</span>
+                <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
             </div>
             
             <div class="track-info">
@@ -308,41 +411,54 @@
                 <div class="track-category" id="currentCategory">未分類</div>
             </div>
 
-            <div class="progress-container">
+            <div class="progress-area">
                 <input type="range" class="progress-bar" id="progressBar" value="0" min="0" max="100" step="0.1">
-                <div class="time-info">
+                <div class="time-labels">
                     <span id="currentTime">0:00</span>
                     <span id="duration">0:00</span>
                 </div>
             </div>
 
             <div class="controls">
-                <button id="shuffleBtn" title="シャッフル">🔀</button>
-                <button id="prevBtn" title="前の曲">⏮</button>
-                <button class="play-pause-btn" id="playBtn" title="再生/一時停止">▶</button>
-                <button id="nextBtn" title="次の曲">⏭</button>
-                <button id="repeatBtn" title="リピート">🔁</button>
+                <button class="btn-icon" id="shuffleBtn" title="シャッフル">
+                    <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+                </button>
+                <button class="btn-icon" id="prevBtn" title="前の曲">
+                    <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button class="play-pause-btn" id="playBtn" title="再生/一時停止">
+                    <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+                <button class="btn-icon" id="nextBtn" title="次の曲">
+                    <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+                <button class="btn-icon" id="repeatBtn" title="リピート">
+                    <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                </button>
             </div>
         </div>
 
-        <!-- ファイルインポート -->
-        <div class="section">
-            <h2>曲を追加</h2>
-            <div class="form-group">
-                <input type="text" id="categoryInput" placeholder="カテゴリ名（例: ドライブ, 作業用）" value="お気に入り">
-                
-                <!-- iOSでダイアログを開きやすくしたファイル選択ボタン -->
+        <!-- 曲の一括追加（畳み込み式でスッキリ） -->
+        <div class="card-section">
+            <button class="add-music-toggle" id="toggleAddPanel">
+                <span>➕ 曲をフォルダ・端末から追加</span>
+                <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </button>
+            <div class="add-music-panel" id="addMusicPanel">
+                <input type="text" class="category-input" id="categoryInput" placeholder="カテゴリ名を入力 (例: ドライブ, 作業用)" value="お気に入り">
                 <button type="button" class="file-select-btn" id="triggerFileInput">
-                    📁 端末からMP3 / M4Aを選択
+                    <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                    複数ファイルを選択して一括追加
                 </button>
-                <!-- accept属性を拡大してiPhoneの「ファイル」アプリでの選択不能を回避 -->
                 <input type="file" id="audioFileInput" accept="audio/*,.mp3,.m4a,audio/mpeg,audio/mp4" multiple style="display: none;">
             </div>
         </div>
 
         <!-- プレイリスト -->
-        <div class="section">
-            <h2>プレイリスト</h2>
+        <div class="card-section">
+            <div class="section-header">
+                <span class="section-title">Playlist</span>
+            </div>
             <div class="filter-tabs" id="filterTabs">
                 <button class="filter-tab active" data-category="all">すべて</button>
             </div>
@@ -362,6 +478,7 @@
 
         const audioElement = document.getElementById('audioElement');
         const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const shuffleBtn = document.getElementById('shuffleBtn');
@@ -372,18 +489,26 @@
         const currentTitleEl = document.getElementById('currentTitle');
         const currentCategoryEl = document.getElementById('currentCategory');
         
+        const toggleAddPanel = document.getElementById('toggleAddPanel');
+        const addMusicPanel = document.getElementById('addMusicPanel');
         const triggerFileInput = document.getElementById('triggerFileInput');
         const audioFileInput = document.getElementById('audioFileInput');
         const categoryInput = document.getElementById('categoryInput');
         const playlistContainer = document.getElementById('playlistContainer');
         const filterTabs = document.getElementById('filterTabs');
 
-        // iOSファイル選択用トリガー
+        // アコーディオン開閉
+        toggleAddPanel.addEventListener('click', () => {
+            toggleAddPanel.classList.toggle('open');
+            addMusicPanel.classList.toggle('show');
+        });
+
+        // ファイル選択の起動
         triggerFileInput.addEventListener('click', () => {
             audioFileInput.click();
         });
 
-        // ファイルが選択されたら自動的に読み込む
+        // 複数曲の一括読み込み
         audioFileInput.addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
@@ -404,7 +529,7 @@
             updateCategories();
             renderPlaylist();
 
-            // 初回読み込み時は1曲目をセット
+            // 最初に追加した曲をセット
             if (initialCount === 0 && tracks.length > 0) {
                 loadTrack(0);
             }
@@ -435,7 +560,7 @@
                 : tracks.filter(t => t.category === currentFilter);
 
             if (filteredTracks.length === 0) {
-                playlistContainer.innerHTML = '<div style="text-align:center; color:var(--text-secondary); padding:15px; font-size:0.85rem;">曲がありません</div>';
+                playlistContainer.innerHTML = '<div style="text-align:center; color:var(--text-sub); padding:20px; font-size:0.8rem;">曲が登録されていません</div>';
                 return;
             }
 
@@ -448,7 +573,9 @@
                         <div class="playlist-item-title">${track.title}</div>
                         <div class="playlist-item-cat">${track.category}</div>
                     </div>
-                    <button class="delete-btn" onclick="removeTrack(event, ${originalIndex})">✕</button>
+                    <button class="delete-btn" onclick="removeTrack(event, ${originalIndex})">
+                        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </button>
                 `;
                 item.addEventListener('click', () => {
                     loadTrack(originalIndex);
@@ -469,6 +596,7 @@
                 audioElement.src = '';
                 currentTitleEl.textContent = '曲を選択してください';
                 currentCategoryEl.textContent = '未分類';
+                updatePlayBtnIcon(false);
             }
         };
 
@@ -483,13 +611,13 @@
             setupMediaSession(track);
         }
 
-        // iOSのロック画面・バックグラウンド再生コントロール連携 (MediaSession API)
+        // iPhoneのバックグラウンド＆ロック画面操作との連携
         function setupMediaSession(track) {
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: track.title,
                     artist: track.category,
-                    album: "Web Music Player"
+                    album: "Music Player"
                 });
 
                 navigator.mediaSession.setActionHandler('play', () => playTrack());
@@ -503,7 +631,7 @@
             if (tracks.length === 0 || !audioElement.src) return;
             audioElement.play().then(() => {
                 isPlaying = true;
-                playBtn.textContent = '⏸';
+                updatePlayBtnIcon(true);
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.playbackState = 'playing';
                 }
@@ -513,9 +641,17 @@
         function pauseTrack() {
             audioElement.pause();
             isPlaying = false;
-            playBtn.textContent = '▶';
+            updatePlayBtnIcon(false);
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'paused';
+            }
+        }
+
+        function updatePlayBtnIcon(playing) {
+            if (playing) {
+                playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // 一時停止アイコン
+            } else {
+                playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; // 再生アイコン
             }
         }
 
@@ -547,12 +683,12 @@
 
         shuffleBtn.addEventListener('click', () => {
             isShuffle = !isShuffle;
-            shuffleBtn.classList.toggle('active-mode', isShuffle);
+            shuffleBtn.classList.toggle('active', isShuffle);
         });
 
         repeatBtn.addEventListener('click', () => {
             isRepeat = !isRepeat;
-            repeatBtn.classList.toggle('active-mode', isRepeat);
+            repeatBtn.classList.toggle('active', isRepeat);
         });
 
         audioElement.addEventListener('timeupdate', () => {
