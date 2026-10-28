@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA (ホーム画面アプリ化) 用の設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MusicPlayer">
+    <title>Music Player</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --text-secondary: #b3b3b3;
+            --accent-color: #1db954;
+            --accent-hover: #1ed760;
+            --border-color: #2a2a2a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        /* プレイヤーカード */
+        .player-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .album-art {
+            width: 160px;
+            height: 160px;
+            background: linear-gradient(135deg, #282828, #3e3e3e);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .album-art span {
+            font-size: 3rem;
+        }
+
+        .track-info {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .track-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 6px;
+        }
+
+        .track-category {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            background: rgba(29, 185, 84, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* プログレスバー */
+        .progress-container {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #404040;
+            border-radius: 3px;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .progress-bar::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text-color);
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* コントロールボタン */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 10px;
+            transition: transform 0.1s, color 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.9);
+        }
+
+        button.active-mode {
+            color: var(--accent-color);
+        }
+
+        .play-pause-btn {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+        }
+
+        /* セクション */
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .section h2 {
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #2a2a2a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        /* iPhoneで確実に応答させるインポートボタン */
+        .file-select-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #2a2a2a;
+            border: 2px dashed var(--accent-color);
+            padding: 14px;
+            border-radius: 8px;
+            color: var(--text-color);
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .filter-tab {
+            background-color: #2a2a2a;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .filter-tab.active {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            font-weight: bold;
+        }
+
+        .playlist {
+            max-height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background-color: #242424;
+            border-radius: 8px;
+        }
+
+        .playlist-item.playing {
+            border-left: 4px solid var(--accent-color);
+            background-color: #222d25;
+        }
+
+        .playlist-item-info {
+            overflow: hidden;
+            margin-right: 10px;
+        }
+
+        .playlist-item-title {
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .playlist-item-cat {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .delete-btn {
+            color: #ff5555;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Music Player</h1>
+
+        <!-- プレイヤー本体 -->
+        <div class="player-card">
+            <div class="album-art">
+                <span>🎵</span>
+            </div>
+            
+            <div class="track-info">
+                <div class="track-title" id="currentTitle">曲を選択してください</div>
+                <div class="track-category" id="currentCategory">未分類</div>
+            </div>
+
+            <div class="progress-container">
+                <input type="range" class="progress-bar" id="progressBar" value="0" min="0" max="100" step="0.1">
+                <div class="time-info">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="shuffleBtn" title="シャッフル">🔀</button>
+                <button id="prevBtn" title="前の曲">⏮</button>
+                <button class="play-pause-btn" id="playBtn" title="再生/一時停止">▶</button>
+                <button id="nextBtn" title="次の曲">⏭</button>
+                <button id="repeatBtn" title="リピート">🔁</button>
+            </div>
+        </div>
+
+        <!-- ファイルインポート -->
+        <div class="section">
+            <h2>曲を追加</h2>
+            <div class="form-group">
+                <input type="text" id="categoryInput" placeholder="カテゴリ名（例: ドライブ, 作業用）" value="お気に入り">
+                
+                <!-- iOSでダイアログを開きやすくしたファイル選択ボタン -->
+                <button type="button" class="file-select-btn" id="triggerFileInput">
+                    📁 端末からMP3 / M4Aを選択
+                </button>
+                <!-- accept属性を拡大してiPhoneの「ファイル」アプリでの選択不能を回避 -->
+                <input type="file" id="audioFileInput" accept="audio/*,.mp3,.m4a,audio/mpeg,audio/mp4" multiple style="display: none;">
+            </div>
+        </div>
+
+        <!-- プレイリスト -->
+        <div class="section">
+            <h2>プレイリスト</h2>
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-category="all">すべて</button>
+            </div>
+            <div class="playlist" id="playlistContainer"></div>
+        </div>
+    </div>
+
+    <audio id="audioElement" playsinline preload="metadata"></audio>
+
+    <script>
+        let tracks = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isShuffle = false;
+        let isRepeat = false;
+        let currentFilter = 'all';
+
+        const audioElement = document.getElementById('audioElement');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const currentTitleEl = document.getElementById('currentTitle');
+        const currentCategoryEl = document.getElementById('currentCategory');
+        
+        const triggerFileInput = document.getElementById('triggerFileInput');
+        const audioFileInput = document.getElementById('audioFileInput');
+        const categoryInput = document.getElementById('categoryInput');
+        const playlistContainer = document.getElementById('playlistContainer');
+        const filterTabs = document.getElementById('filterTabs');
+
+        // iOSファイル選択用トリガー
+        triggerFileInput.addEventListener('click', () => {
+            audioFileInput.click();
+        });
+
+        // ファイルが選択されたら自動的に読み込む
+        audioFileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            const category = categoryInput.value.trim() || '未分類';
+            const initialCount = tracks.length;
+
+            files.forEach(file => {
+                const fileURL = URL.createObjectURL(file);
+                tracks.push({
+                    title: file.name.replace(/\.[^/.]+$/, ""),
+                    category: category,
+                    url: fileURL
+                });
+            });
+
+            audioFileInput.value = '';
+            updateCategories();
+            renderPlaylist();
+
+            // 初回読み込み時は1曲目をセット
+            if (initialCount === 0 && tracks.length > 0) {
+                loadTrack(0);
+            }
+        });
+
+        function updateCategories() {
+            const categories = ['all', ...new Set(tracks.map(t => t.category))];
+            filterTabs.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `filter-tab ${currentFilter === cat ? 'active' : ''}`;
+                btn.textContent = cat === 'all' ? 'すべて' : cat;
+                btn.addEventListener('click', () => {
+                    currentFilter = cat;
+                    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderPlaylist();
+                });
+                filterTabs.appendChild(btn);
+            });
+        }
+
+        function renderPlaylist() {
+            playlistContainer.innerHTML = '';
+            const filteredTracks = currentFilter === 'all' 
+                ? tracks 
+                : tracks.filter(t => t.category === currentFilter);
+
+            if (filteredTracks.length === 0) {
+                playlistContainer.innerHTML = '<div style="text-align:center; color:var(--text-secondary); padding:15px; font-size:0.85rem;">曲がありません</div>';
+                return;
+            }
+
+            filteredTracks.forEach(track => {
+                const originalIndex = tracks.indexOf(track);
+                const item = document.createElement('div');
+                item.className = `playlist-item ${originalIndex === currentIndex ? 'playing' : ''}`;
+                item.innerHTML = `
+                    <div class="playlist-item-info" style="flex-grow: 1;">
+                        <div class="playlist-item-title">${track.title}</div>
+                        <div class="playlist-item-cat">${track.category}</div>
+                    </div>
+                    <button class="delete-btn" onclick="removeTrack(event, ${originalIndex})">✕</button>
+                `;
+                item.addEventListener('click', () => {
+                    loadTrack(originalIndex);
+                    playTrack();
+                });
+                playlistContainer.appendChild(item);
+            });
+        }
+
+        window.removeTrack = function(event, index) {
+            event.stopPropagation();
+            tracks.splice(index, 1);
+            if (currentIndex >= tracks.length) currentIndex = Math.max(0, tracks.length - 1);
+            updateCategories();
+            renderPlaylist();
+            if (tracks.length === 0) {
+                audioElement.pause();
+                audioElement.src = '';
+                currentTitleEl.textContent = '曲を選択してください';
+                currentCategoryEl.textContent = '未分類';
+            }
+        };
+
+        function loadTrack(index) {
+            if (tracks.length === 0) return;
+            currentIndex = index;
+            const track = tracks[currentIndex];
+            audioElement.src = track.url;
+            currentTitleEl.textContent = track.title;
+            currentCategoryEl.textContent = track.category;
+            renderPlaylist();
+            setupMediaSession(track);
+        }
+
+        // iOSのロック画面・バックグラウンド再生コントロール連携 (MediaSession API)
+        function setupMediaSession(track) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: track.category,
+                    album: "Web Music Player"
+                });
+
+                navigator.mediaSession.setActionHandler('play', () => playTrack());
+                navigator.mediaSession.setActionHandler('pause', () => pauseTrack());
+                navigator.mediaSession.setActionHandler('previoustrack', () => prevBtn.click());
+                navigator.mediaSession.setActionHandler('nexttrack', () => nextBtn.click());
+            }
+        }
+
+        function playTrack() {
+            if (tracks.length === 0 || !audioElement.src) return;
+            audioElement.play().then(() => {
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+            }).catch(e => console.log("再生エラー:", e));
+        }
+
+        function pauseTrack() {
+            audioElement.pause();
+            isPlaying = false;
+            playBtn.textContent = '▶';
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'paused';
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                pauseTrack();
+            } else {
+                playTrack();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (tracks.length === 0) return;
+            if (isShuffle) {
+                currentIndex = Math.floor(Math.random() * tracks.length);
+            } else {
+                currentIndex = (currentIndex + 1) % tracks.length;
+            }
+            loadTrack(currentIndex);
+            playTrack();
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (tracks.length === 0) return;
+            currentIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(currentIndex);
+            playTrack();
+        });
+
+        shuffleBtn.addEventListener('click', () => {
+            isShuffle = !isShuffle;
+            shuffleBtn.classList.toggle('active-mode', isShuffle);
+        });
+
+        repeatBtn.addEventListener('click', () => {
+            isRepeat = !isRepeat;
+            repeatBtn.classList.toggle('active-mode', isRepeat);
+        });
+
+        audioElement.addEventListener('timeupdate', () => {
+            if (audioElement.duration) {
+                const progress = (audioElement.currentTime / audioElement.duration) * 100;
+                progressBar.value = progress;
+                currentTimeEl.textContent = formatTime(audioElement.currentTime);
+                durationEl.textContent = formatTime(audioElement.duration);
+            }
+        });
+
+        progressBar.addEventListener('input', () => {
+            if (audioElement.duration) {
+                audioElement.currentTime = (progressBar.value / 100) * audioElement.duration;
+            }
+        });
+
+        audioElement.addEventListener('ended', () => {
+            if (isRepeat) {
+                audioElement.currentTime = 0;
+                playTrack();
+            } else {
+                nextBtn.click();
+            }
+        });
+
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+    </script>
+</body>
+</html>
